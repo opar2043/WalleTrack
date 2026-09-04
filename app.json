@@ -1,25 +1,64 @@
 {
   "expo": {
     "name": "WalleTrack",
-    "slug": "WalleTrack",
+    "slug": "walle-track",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6C5CE7"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.walletrack.app",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "WalleTrack uses Face ID to securely lock your financial data.",
+        "NSCameraUsageDescription": "WalleTrack uses the camera to take photos of receipts.",
+        "NSPhotoLibraryUsageDescription": "WalleTrack uses the photo library to attach receipt images."
+      }
     },
     "android": {
+      "package": "com.walletrack.app",
+      "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#6C5CE7",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "permissions": [
+        "USE_BIOMETRIC",
+        "VIBRATE",
+        "CAMERA",
+        "READ_MEDIA_IMAGES",
+        "POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      "expo-splash-screen",
+      "expo-secure-store",
+      "expo-status-bar",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow WalleTrack to use Face ID to secure your financial data."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#6C5CE7"
+        }
+      ],
+      "expo-localization"
+    ]
   }
 }
