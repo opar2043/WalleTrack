@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
   Image,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Check } from "lucide-react-native";
 import { Button } from "@components/ui/Button";
@@ -67,6 +67,7 @@ export default function ProfileSetupScreen({ navigation }: { navigation: { reset
       setString(CACHE_KEYS.CURRENCY, currency);
       setString(CACHE_KEYS.NATIONALITY, nationality);
       setBoolean(CACHE_KEYS.ONBOARDING_DONE, true);
+      setBoolean(CACHE_KEYS.SETUP_DONE, true);
 
       setProfile({
         nationality,

@@ -147,8 +147,13 @@ export function TransactionListItem({
           {formatDateShort(transaction.date)} • {formatTime(transaction.date)}
         </Text>
       </View>
-      <View className="items-end">
-        <Text className={cn("text-base font-bold", amountColor)}>
+      <View className="flex-shrink items-end pl-3">
+        <Text
+          className={cn("text-base font-bold", amountColor)}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+        >
           {amountPrefix}
           {formatCurrency(transaction.amount, transaction.currency, false)}
         </Text>

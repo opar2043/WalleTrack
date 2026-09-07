@@ -3,12 +3,12 @@ import {
   View,
   Text,
   Alert,
-  SafeAreaView,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Pressable,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Mail, Lock, ArrowLeft } from "lucide-react-native";
 import { Button } from "@components/ui/Button";
 import { Input } from "@components/ui/Input";

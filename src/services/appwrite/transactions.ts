@@ -1,6 +1,4 @@
-import { databases } from "./client";
-import { Query } from "react-native-appwrite";
-import { APPWRITE_ENV } from "./client";
+import { DEMO_TRANSACTIONS } from "../../data";
 import type { Transaction, TransactionType, TransactionSplit } from "@t/index";
 
 export interface TransactionDoc extends Transaction {
@@ -26,6 +24,12 @@ export interface CreateTransactionData {
   recurringRuleId?: string;
 }
 
+// In-memory store so create/update/delete reflect immediately in the UI
+// during the demo session. Resets to the seed data on app restart.
+const store: TransactionDoc[] = DEMO_TRANSACTIONS.map((t) =>
+  normalizeTransaction({ ...t })
+);
+
 export async function getTransactions(
   userId: string,
   options?: {
@@ -38,99 +42,79 @@ export async function getTransactions(
     order?: "asc" | "desc";
   }
 ): Promise<TransactionDoc[]> {
-  try {
-    const queries: string[] = [Query.equal("userId", userId)];
+  let result = store.filter((t) => t.userId === userId);
 
-    if (options?.accountId) queries.push(Query.equal("accountId", options.accountId));
-    if (options?.categoryId) queries.push(Query.equal("categoryId", options.categoryId));
-    if (options?.type) queries.push(Query.equal("type", options.type));
-    if (options?.fromDate) queries.push(Query.greaterThanEqual("date", options.fromDate.toISOString()));
-    if (options?.toDate) queries.push(Query.lessThanEqual("date", options.toDate.toISOString()));
-    if (options?.limit) queries.push(Query.limit(options.limit));
-
-    const sortOrder = options?.order === "asc" ? Query.orderAsc("date") : Query.orderDesc("date");
-    queries.push(sortOrder);
-    queries.push(options?.limit ? Query.limit(options.limit) : Query.limit(100));
-
-    const result = await databases.listDocuments(
-      APPWRITE_ENV.databaseId,
-      APPWRITE_ENV.collections.transactions,
-      queries
-    );
-
-    return result.documents.map((doc) => normalizeTransaction(doc));
-  } catch (error) {
-    console.error("Get transactions error:", error);
-    return [];
+  if (options?.accountId) {
+    result = result.filter((t) => t.accountId === options.accountId);
   }
+  if (options?.categoryId) {
+    result = result.filter((t) => t.categoryId === options.categoryId);
+  }
+  if (options?.type) {
+    result = result.filter((t) => t.type === options.type);
+  }
+  if (options?.fromDate) {
+    result = result.filter((t) => new Date(t.date) >= new Date(options.fromDate!));
+  }
+  if (options?.toDate) {
+    result = result.filter((t) => new Date(t.date) <= new Date(options.toDate!));
+  }
+
+  result.sort((a, b) => {
+    const cmp = new Date(b.date).getTime() - new Date(a.date).getTime();
+    return options?.order === "asc" ? -cmp : cmp;
+  });
+
+  if (options?.limit) {
+    result = result.slice(0, options.limit);
+  }
+
+  return result.map((t) => ({ ...t, date: new Date(t.date) }));
 }
 
 export async function createTransaction(
   data: CreateTransactionData
 ): Promise<TransactionDoc> {
-  const result = await databases.createDocument(
-    APPWRITE_ENV.databaseId,
-    APPWRITE_ENV.collections.transactions,
-    "unique()",
-    {
-      userId: data.userId,
-      accountId: data.accountId,
-      toAccountId: data.toAccountId ?? "",
-      type: data.type,
-      amount: data.amount,
-      currency: data.currency,
-      convertedAmount: data.convertedAmount,
-      categoryId: data.categoryId ?? "",
-      splits: data.splits ?? [],
-      note: data.note ?? "",
-      receiptFileId: data.receiptFileId ?? "",
-      date: data.date.toISOString(),
-      paymentMethod: data.paymentMethod ?? "",
-      tags: data.tags ?? [],
-      isRecurring: data.isRecurring,
-      recurringRuleId: data.recurringRuleId ?? "",
-    }
-  );
-
-  return normalizeTransaction(result);
+  const transaction: TransactionDoc = {
+    $id: `txn_${Date.now()}`,
+    userId: data.userId,
+    accountId: data.accountId,
+    toAccountId: data.toAccountId ?? "",
+    type: data.type,
+    amount: data.amount,
+    currency: data.currency,
+    convertedAmount: data.convertedAmount,
+    categoryId: data.categoryId ?? "",
+    splits: data.splits ?? [],
+    note: data.note ?? "",
+    receiptFileId: data.receiptFileId ?? "",
+    date: new Date(data.date),
+    paymentMethod: data.paymentMethod ?? "",
+    tags: data.tags ?? [],
+    isRecurring: data.isRecurring,
+    recurringRuleId: data.recurringRuleId ?? "",
+    createdAt: new Date().toISOString(),
+  };
+  store.unshift(transaction);
+  return { ...transaction, date: new Date(transaction.date) };
 }
 
 export async function updateTransaction(
   transactionId: string,
   data: Partial<CreateTransactionData>
 ): Promise<void> {
-  const updateData: Record<string, unknown> = {};
-
-  if (data.accountId !== undefined) updateData.accountId = data.accountId;
-  if (data.toAccountId !== undefined) updateData.toAccountId = data.toAccountId;
-  if (data.type !== undefined) updateData.type = data.type;
-  if (data.amount !== undefined) updateData.amount = data.amount;
-  if (data.currency !== undefined) updateData.currency = data.currency;
-  if (data.convertedAmount !== undefined) updateData.convertedAmount = data.convertedAmount;
-  if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
-  if (data.splits !== undefined) updateData.splits = data.splits;
-  if (data.note !== undefined) updateData.note = data.note;
-  if (data.receiptFileId !== undefined) updateData.receiptFileId = data.receiptFileId;
-  if (data.date !== undefined) updateData.date = data.date.toISOString();
-  if (data.paymentMethod !== undefined) updateData.paymentMethod = data.paymentMethod;
-  if (data.tags !== undefined) updateData.tags = data.tags;
-  if (data.isRecurring !== undefined) updateData.isRecurring = data.isRecurring;
-  if (data.recurringRuleId !== undefined) updateData.recurringRuleId = data.recurringRuleId;
-
-  await databases.updateDocument(
-    APPWRITE_ENV.databaseId,
-    APPWRITE_ENV.collections.transactions,
-    transactionId,
-    updateData
-  );
+  const index = store.findIndex((t) => t.$id === transactionId);
+  if (index === -1) return;
+  store[index] = {
+    ...store[index],
+    ...data,
+    date: data.date ? new Date(data.date) : store[index].date,
+  };
 }
 
 export async function deleteTransaction(transactionId: string): Promise<void> {
-  await databases.deleteDocument(
-    APPWRITE_ENV.databaseId,
-    APPWRITE_ENV.collections.transactions,
-    transactionId
-  );
+  const index = store.findIndex((t) => t.$id === transactionId);
+  if (index !== -1) store.splice(index, 1);
 }
 
 function normalizeTransaction(doc: Record<string, unknown>): TransactionDoc {

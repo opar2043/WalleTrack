@@ -3,8 +3,8 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   TrendingUp,
   AlertTriangle,

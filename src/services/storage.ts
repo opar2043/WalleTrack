@@ -10,6 +10,7 @@ export const CACHE_KEYS = {
   CURRENCY: "@currency",
   NATIONALITY: "@nationality",
   ONBOARDING_DONE: "@onboarding_done",
+  SETUP_DONE: "@setup_done",
   PROFILE: "@profile",
   EXCHANGE_RATES: "@exchange_rates",
   OFFLINE_QUEUE: "@offline_queue",

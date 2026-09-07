@@ -5,9 +5,9 @@ import {
   Pressable,
   FlatList,
   Dimensions,
-  SafeAreaView,
   useWindowDimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useThemeStore } from "@stores/themeStore";
 import i18n from "@i18n/index";

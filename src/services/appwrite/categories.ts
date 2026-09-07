@@ -1,47 +1,20 @@
-import { databases } from "./client";
-import { Query } from "react-native-appwrite";
-import { APPWRITE_ENV } from "./client";
+import { DEMO_CATEGORIES } from "../../data";
 import type { Category, CategoryType } from "@t/index";
 
 export interface CategoryDoc extends Category {
   $id: string;
 }
 
+// In-memory store so create/update/delete reflect immediately in the UI
+// during the demo session. Resets to the seed data on app restart.
+const store: CategoryDoc[] = (DEMO_CATEGORIES as unknown as CategoryDoc[]).map(
+  (c) => ({ ...c })
+);
+
 export async function getCategories(
   userId: string
 ): Promise<CategoryDoc[]> {
-  try {
-    const systemResult = await databases.listDocuments(
-      APPWRITE_ENV.databaseId,
-      APPWRITE_ENV.collections.categories,
-      [
-        Query.equal("userId", ""),
-        Query.limit(100),
-      ]
-    );
-
-    const userResult = await databases.listDocuments(
-      APPWRITE_ENV.databaseId,
-      APPWRITE_ENV.collections.categories,
-      [
-        Query.equal("userId", userId),
-        Query.limit(100),
-      ]
-    );
-
-    const allDocs = [...systemResult.documents, ...userResult.documents];
-    return allDocs.map((doc) => ({
-      $id: doc.$id,
-      userId: doc.userId,
-      name: doc.name,
-      icon: doc.icon,
-      color: doc.color,
-      type: doc.type as CategoryType,
-    }));
-  } catch (error) {
-    console.error("Get categories error:", error);
-    return [];
-  }
+  return store.map((c) => ({ ...c }));
 }
 
 export async function createCategory(
@@ -53,27 +26,16 @@ export async function createCategory(
     type: CategoryType;
   }
 ): Promise<CategoryDoc> {
-  const result = await databases.createDocument(
-    APPWRITE_ENV.databaseId,
-    APPWRITE_ENV.collections.categories,
-    "unique()",
-    {
-      userId,
-      name: data.name,
-      icon: data.icon,
-      color: data.color,
-      type: data.type,
-    }
-  );
-
-  return {
-    $id: result.$id,
-    userId: result.userId,
-    name: result.name,
-    icon: result.icon,
-    color: result.color,
-    type: result.type as CategoryType,
+  const category: CategoryDoc = {
+    $id: `cat_${Date.now()}`,
+    userId,
+    name: data.name,
+    icon: data.icon,
+    color: data.color,
+    type: data.type,
   };
+  store.push(category);
+  return { ...category };
 }
 
 export async function updateCategory(
@@ -85,18 +47,12 @@ export async function updateCategory(
     type: CategoryType;
   }>
 ): Promise<void> {
-  await databases.updateDocument(
-    APPWRITE_ENV.databaseId,
-    APPWRITE_ENV.collections.categories,
-    categoryId,
-    data
-  );
+  const index = store.findIndex((c) => c.$id === categoryId);
+  if (index === -1) return;
+  store[index] = { ...store[index], ...data };
 }
 
 export async function deleteCategory(categoryId: string): Promise<void> {
-  await databases.deleteDocument(
-    APPWRITE_ENV.databaseId,
-    APPWRITE_ENV.collections.categories,
-    categoryId
-  );
+  const index = store.findIndex((c) => c.$id === categoryId);
+  if (index !== -1) store.splice(index, 1);
 }

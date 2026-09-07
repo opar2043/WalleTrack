@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
   Modal,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Trash2, Pencil, Repeat, Share2 } from "lucide-react-native";
 import { CategoryIcon } from "@components/common/CategoryListItem";
 import { Button } from "@components/ui/Button";

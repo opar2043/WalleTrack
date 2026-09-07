@@ -3,10 +3,10 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
   Switch,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Filter as FilterIcon, RotateCcw } from "lucide-react-native";
 import { Button } from "@components/ui/Button";
 import { useCategoriesStore } from "@stores/categoriesStore";

@@ -3,9 +3,9 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Crown, Check, Sparkles } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "@components/ui/Button";

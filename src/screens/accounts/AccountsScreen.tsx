@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
   TextInput,
   Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Banknote, Landmark, CreditCard, Trash2, Pencil, X, Check } from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAuthStore } from "@stores/authStore";
@@ -168,8 +168,13 @@ export default function AccountsScreen() {
                     </Text>
                   )}
                 </View>
-                <View className="items-end">
-                  <Text className={cn("text-base font-bold", isDark ? "text-white" : "text-[#1E1E2D]")}>
+                <View className="flex-shrink items-end pl-3">
+                  <Text
+                    className={cn("text-base font-bold", isDark ? "text-white" : "text-[#1E1E2D]")}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.7}
+                  >
                     {formatCurrency(acc.balance, acc.currency, false)}
                   </Text>
                   <View className="mt-1 flex-row gap-2">

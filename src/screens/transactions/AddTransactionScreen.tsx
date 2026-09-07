@@ -3,12 +3,12 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
   TextInput,
   Switch,
   Modal,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { X, Camera, RefreshCw, Plus, Trash2, ChevronDown, Image as ImageIcon } from "lucide-react-native";
 import { useAuthStore } from "@stores/authStore";

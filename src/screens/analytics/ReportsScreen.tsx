@@ -3,9 +3,9 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowUpRight, ArrowDownRight, PieChart as PieIcon, SlidersHorizontal } from "lucide-react-native";
 import { CalendarStrip } from "@components/common/CalendarStrip";
 import { CategoryListItem } from "@components/common/CategoryListItem";

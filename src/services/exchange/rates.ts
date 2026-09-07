@@ -1,42 +1,32 @@
+import { DEMO_USD_RATES } from "../../data";
 import { CACHE_KEYS, getItem, setItem } from "@services/storage";
 import type { ExchangeRate } from "@t/index";
-import { EXCHANGE_RATE_API_KEY } from "@env";
 
-const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
-const API_URL = "https://open.er-api.com/v6/latest";
+// Static demo rates – no network calls. When you wire up the real backend,
+// replace this implementation with a live exchange-rate API.
+const BASE_RATES: Record<string, number> = DEMO_USD_RATES;
 
 export async function getExchangeRates(
   baseCurrency: string = "USD"
 ): Promise<Record<string, number> | null> {
   const cached = getItem<ExchangeRate>(`${CACHE_KEYS.EXCHANGE_RATES}_${baseCurrency}`);
 
-  if (
-    cached &&
-    Date.now() - cached.updatedAt < CACHE_DURATION_MS &&
-    Object.keys(cached.rates).length > 0
-  ) {
-    return cached.rates;
-  }
+  const base = baseCurrency.toUpperCase();
+  const baseValue = BASE_RATES[base] ?? 1;
 
-  try {
-    const url = `${API_URL}/${baseCurrency}`;
-    const response = await fetch(url);
-    const data = await response.json();
+  const rates: Record<string, number> = {};
+  Object.keys(BASE_RATES).forEach((code) => {
+    rates[code] = BASE_RATES[code] / baseValue;
+  });
 
-    if (!data.rates) return null;
+  const rate: ExchangeRate = {
+    base: base,
+    rates,
+    updatedAt: Date.now(),
+  };
 
-    const rates: ExchangeRate = {
-      base: baseCurrency,
-      rates: data.rates,
-      updatedAt: Date.now(),
-    };
-
-    setItem(`${CACHE_KEYS.EXCHANGE_RATES}_${baseCurrency}`, rates);
-    return rates.rates;
-  } catch (error) {
-    console.error("Exchange rate fetch error:", error);
-    return cached?.rates ?? null;
-  }
+  setItem(`${CACHE_KEYS.EXCHANGE_RATES}_${base}`, rate);
+  return cached?.rates ?? rates;
 }
 
 export async function convertCurrency(
@@ -46,12 +36,19 @@ export async function convertCurrency(
 ): Promise<number> {
   if (fromCurrency === toCurrency) return amount;
 
-  const rates = await getExchangeRates(fromCurrency);
-  if (!rates || !rates[toCurrency]) {
+  const from = fromCurrency.toUpperCase();
+  const to = toCurrency.toUpperCase();
+
+  const fromPerUsd = BASE_RATES[from];
+  const toPerUsd = BASE_RATES[to];
+
+  if (fromPerUsd == null || toPerUsd == null) {
     return amount;
   }
 
-  return amount * rates[toCurrency];
+  // amount(from) -> USD -> amount(to)
+  const usd = amount / fromPerUsd;
+  return usd * toPerUsd;
 }
 
 export async function convertToBase(

@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
   Modal,
   TextInput,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, UserPlus, Users, Crown, Trash2 } from "lucide-react-native";
 import { Avatar } from "@components/ui/Avatar";
 import { Button } from "@components/ui/Button";

@@ -1,9 +1,11 @@
 import React from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Wallet } from "lucide-react-native";
 import { useThemeStore } from "@stores/themeStore";
 import { formatCurrency } from "@utils/format";
 import { maskCardNumber } from "@utils/helpers";
+import i18n from "@i18n/index";
 
 interface BalanceCardProps {
   balance: number;
@@ -28,44 +30,62 @@ export function BalanceCard({
 
   return (
     <LinearGradient
-      colors={["#2A2A3C", "#1E1E2D"]}
+      colors={isDark ? ["#2A2A3C", "#1A1A26"] : ["#2A2A3C", "#1E2436"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      className="overflow-hidden rounded-3xl p-5 shadow-lg"
+      className="overflow-hidden rounded-[28px] p-6 shadow-lg"
       style={{
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 6,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 20,
+        elevation: 10,
       }}
     >
-      {/* Subtle wave pattern overlay using decorative elements */}
-      <View className="absolute inset-0 opacity-10">
-        <View className="absolute -right-8 -top-6 h-32 w-32 rounded-full bg-white" />
-        <View className="absolute -right-16 top-10 h-40 w-40 rounded-full bg-white" />
-        <View className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white" />
+      {/* Decorative shapes */}
+      <View pointerEvents="none" className="absolute inset-0">
+        <View className="absolute -right-10 -top-14 h-44 w-44 rounded-full bg-white/[0.07]" />
+        <View className="absolute -bottom-20 right-4 h-48 w-48 rounded-full bg-[#6C5CE7]/30" />
+        <View className="absolute -right-6 top-8 h-20 w-20 rounded-full bg-white/[0.05]" />
       </View>
 
+      {/* Top row: label + currency */}
       <View className="flex-row items-center justify-between">
-        <View>
-          {accountName ? (
-            <Text className="text-sm text-gray-400">{accountName}</Text>
-          ) : (
-            <Text className="text-sm text-gray-400">Total Balance</Text>
-          )}
-          <Text className="mt-1 text-3xl font-bold text-white">
-            {showBalanceMask ? "••••••" : formatCurrency(balance, currency)}
+        <View className="flex-row items-center">
+          <View className="h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
+            <Wallet size={18} color="#FFFFFF" />
+          </View>
+          <Text className="ml-3 text-sm font-medium text-gray-300">
+            {accountName || i18n.t("home.totalBalance")}
           </Text>
         </View>
-        <View className="items-end">
-          <Text className="text-xs tracking-widest text-gray-500">{cardBrand}</Text>
-          {cardLast4 && (
-            <Text className="mt-1 text-sm tracking-widest text-gray-300">
-              {maskCardNumber(cardLast4)}
-            </Text>
-          )}
+        <View className="rounded-full bg-white/10 px-3 py-1.5">
+          <Text className="text-xs font-bold tracking-wide text-white">{currency}</Text>
         </View>
+      </View>
+
+      {/* Balance */}
+      <View className="mt-6">
+        <Text
+          className="text-4xl font-extrabold text-white"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.55}
+        >
+          {showBalanceMask ? "••••••" : formatCurrency(balance, currency)}
+        </Text>
+      </View>
+
+      {/* Bottom row */}
+      <View className="mt-6 flex-row items-center justify-between">
+        {showCardStyle && cardLast4 ? (
+          <Text className="text-xs tracking-[0.2em] text-gray-500">
+            {maskCardNumber(cardLast4)}
+          </Text>
+        ) : (
+          <Text className="text-xs tracking-[0.25em] text-gray-500">{cardBrand}</Text>
+        )}
+        <Text className="text-xs font-semibold tracking-wide text-gray-500">WalleTrack</Text>
       </View>
     </LinearGradient>
   );

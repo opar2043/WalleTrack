@@ -3,9 +3,9 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { PieChart } from "react-native-gifted-charts";
 import { ArrowLeft, ChevronRight } from "lucide-react-native";
 import { CalendarStrip } from "@components/common/CalendarStrip";

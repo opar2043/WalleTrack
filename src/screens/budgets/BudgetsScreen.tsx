@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  SafeAreaView,
   Pressable,
   Modal,
   TextInput,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, Plus, Trash2, TrendingDown } from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { Button } from "@components/ui/Button";

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Home, Wallet, Plus, BarChart3, Settings } from "lucide-react-native";
 import { useThemeStore } from "@stores/themeStore";
 import { cn } from "@utils/cn";
@@ -15,6 +16,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; color?: strin
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const isDark = useThemeStore((s) => s.isDark);
+  const insets = useSafeAreaInsets();
 
   const tabs = state.routes.slice(0);
 
@@ -32,14 +34,17 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
 
   return (
     <View
-      className={cn(
-        "absolute bottom-0 left-0 right-0 items-center",
-      )}
+      className="absolute bottom-0 left-0 right-0"
+      style={{
+        paddingLeft: 12,
+        paddingRight: 12,
+        paddingBottom: Math.max(insets.bottom, 16),
+      }}
     >
       <View
         className={cn(
-          "mb-5 flex-row items-center justify-around",
-          "mx-6 rounded-3xl px-2 py-3",
+          "w-full flex-row items-center justify-between",
+          "rounded-3xl px-2 py-3",
           "shadow-lg",
           isDark
             ? "bg-[#1E1E2D] shadow-black/40"

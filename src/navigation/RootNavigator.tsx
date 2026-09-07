@@ -20,6 +20,9 @@ export default function RootNavigator() {
   const [onboardingSeen, setOnboardingSeen] = React.useState(
     getBoolean(CACHE_KEYS.ONBOARDING_DONE)
   );
+  const [setupDone, setSetupDone] = React.useState(
+    getBoolean(CACHE_KEYS.SETUP_DONE)
+  );
 
   useEffect(() => {
     checkAuth();
@@ -59,7 +62,7 @@ export default function RootNavigator() {
             </>
           ) : (
             <>
-              <Stack.Screen name="Setup" component={SetupNavigator} />
+              {!setupDone && <Stack.Screen name="Setup" component={SetupNavigator} />}
               <Stack.Screen name="Main" component={MainNavigator} />
             </>
           )}

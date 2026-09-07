@@ -5,15 +5,14 @@ import {
   ScrollView,
   Pressable,
   RefreshControl,
-  SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowUpRight, ArrowDownRight, Eye, EyeOff, ChevronRight } from "lucide-react-native";
-import { BarChart } from "react-native-gifted-charts";
+import { BarChart, PieChart } from "react-native-gifted-charts";
 import { BalanceCard } from "@components/common/BalanceCard";
 import { TransactionListItem } from "@components/common/TransactionListItem";
 import { EmptyState } from "@components/ui/EmptyState";
-import { Button } from "@components/ui/Button";
 import { LoadingState } from "@components/ui/LoadingState";
 import { useAuthStore } from "@stores/authStore";
 import { useAccountsStore } from "@stores/accountsStore";
@@ -23,8 +22,7 @@ import { useProfileStore } from "@stores/profileStore";
 import { useThemeStore } from "@stores/themeStore";
 import i18n from "@i18n/index";
 import { cn } from "@utils/cn";
-import { formatCurrency, formatMonthYear, getStartOfMonth } from "@utils/format";
-import { CUSTOM_CURRENCY_SYMBOLS } from "@constants/index";
+import { formatCurrency, formatMonthYear, getStartOfMonth, getChartTheme } from "@utils/format";
 
 interface HomeScreenProps {
   navigation: {
@@ -41,9 +39,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const isDark = useThemeStore((s) => s.isDark);
   const [showBalances, setShowBalances] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { width } = useWindowDimensions();
 
   const baseCurrency = profile?.baseCurrency || "USD";
-  const currencySymbol = CUSTOM_CURRENCY_SYMBOLS[baseCurrency] || "$";
+  const chartTheme = getChartTheme(isDark);
+  const chartWidth = Math.min(Math.floor(width - 80), 600);
+  const pieRadius = Math.min(Math.floor((width - 96) / 2), 120);
 
   useEffect(() => {
     if (!userId) return;
@@ -74,6 +75,56 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   const totalMonthExpense = monthTransactions
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + (t.currency === baseCurrency ? t.amount : t.convertedAmount), 0);
+
+  const monthExpenseByCategory = useMemo(() => {
+    const map = new Map<string, number>();
+    monthTransactions
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
+        if (t.categoryId) {
+          const current = map.get(t.categoryId) || 0;
+          const amount = t.currency === baseCurrency ? t.amount : t.convertedAmount;
+          map.set(t.categoryId, current + amount);
+        }
+      });
+    return Array.from(map.entries())
+      .map(([catId, amount]) => ({ catId, amount, category: getCategoryById(catId) }))
+      .filter((x) => x.category)
+      .sort((a, b) => b.amount - a.amount);
+  }, [monthTransactions, getCategoryById, baseCurrency]);
+
+  const monthExpenseTotal = monthExpenseByCategory.reduce((s, x) => s + x.amount, 0);
+
+  const pieData = useMemo(() => {
+    const slices = monthExpenseByCategory.slice(0, 4).map((item, idx) => ({
+      value: item.amount,
+      color: item.category?.color || chartTheme.pieColors[idx % chartTheme.pieColors.length],
+    }));
+    const rest = monthExpenseByCategory.slice(4).reduce((s, x) => s + x.amount, 0);
+    if (rest > 0) {
+      slices.push({ value: rest, color: "#9CA3AF" });
+    }
+    return slices;
+  }, [monthExpenseByCategory, chartTheme.pieColors]);
+
+  const pieLegend = useMemo(() => {
+    const items = monthExpenseByCategory.slice(0, 4).map((item) => ({
+      label: item.category?.name ?? "",
+      color: item.category?.color ?? "#9CA3AF",
+      amount: item.amount,
+      pct: monthExpenseTotal > 0 ? Math.round((item.amount / monthExpenseTotal) * 100) : 0,
+    }));
+    const restAmount = monthExpenseByCategory.slice(4).reduce((s, x) => s + x.amount, 0);
+    if (restAmount > 0) {
+      items.push({
+        label: i18n.t("common.other"),
+        color: "#9CA3AF",
+        amount: restAmount,
+        pct: monthExpenseTotal > 0 ? Math.round((restAmount / monthExpenseTotal) * 100) : 0,
+      });
+    }
+    return items;
+  }, [monthExpenseByCategory, monthExpenseTotal]);
 
   const recentTransactions = useMemo(
     () => transactions.slice(0, 5),
@@ -185,11 +236,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#10B981]/10">
               <ArrowUpRight size={20} color="#10B981" />
             </View>
-            <View>
+            <View className="flex-1">
               <Text className={cn("text-xs", isDark ? "text-gray-400" : "text-gray-500")}>
                 {i18n.t("home.income")}
               </Text>
-              <Text className={cn("text-base font-bold text-[#10B981]", isDark ? "text-[#34D399]" : "")}>
+              <Text
+                className={cn("text-base font-bold text-[#10B981]", isDark ? "text-[#34D399]" : "")}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+              >
                 {showBalances
                   ? formatCurrency(totalMonthIncome, baseCurrency, false)
                   : maskedBalance}
@@ -205,11 +261,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-[#FF6B4A]/10">
               <ArrowDownRight size={20} color="#FF6B4A" />
             </View>
-            <View>
+            <View className="flex-1">
               <Text className={cn("text-xs", isDark ? "text-gray-400" : "text-gray-500")}>
                 {i18n.t("home.expense")}
               </Text>
-              <Text className="text-base font-bold text-[#FF6B4A]">
+              <Text
+                className="text-base font-bold text-[#FF6B4A]"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+              >
                 {showBalances
                   ? formatCurrency(totalMonthExpense, baseCurrency, false)
                   : maskedBalance}
@@ -239,10 +300,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           >
             <BarChart
               data={chartData}
-              width={300}
+              width={chartWidth}
               height={150}
               barWidth={12}
-              spacing={18}
+              spacing={chartWidth >= 480 ? 26 : 18}
               frontColor="#10B981"
               isAnimated
               roundedTop
@@ -271,6 +332,73 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               </View>
             </View>
           </View>
+        </View>
+
+        {/* Spending breakdown */}
+        <View className="px-5 pt-6">
+          <View className="mb-3 flex-row items-center justify-between">
+            <Text className={cn("text-lg font-bold", isDark ? "text-white" : "text-[#1E1E2D]")}>
+              {i18n.t("home.spendingBreakdown")}
+            </Text>
+            <Pressable onPress={() => navigation.navigate("AnalyticsDetail")}>
+              <Text className="text-[13px] font-semibold text-gray-400">
+                {i18n.t("common.viewAll")}
+              </Text>
+            </Pressable>
+          </View>
+
+          {pieData.length === 0 ? (
+            <View className={cn("rounded-3xl p-6", isDark ? "bg-[#1E1E2D]" : "bg-white")}>
+              <Text className={cn("text-sm", isDark ? "text-gray-400" : "text-gray-500")}>
+                {i18n.t("empty.transactions")}
+              </Text>
+            </View>
+          ) : (
+            <View className={cn("rounded-3xl p-5", isDark ? "bg-[#1E1E2D]" : "bg-white")}>
+              <View className="items-center">
+                <PieChart
+                  data={pieData}
+                  donut
+                  radius={pieRadius}
+                  innerRadius={pieRadius - 34}
+                  innerCircleColor={isDark ? "#1E1E2D" : "#FFFFFF"}
+                  centerLabelComponent={() => (
+                    <View className="items-center">
+                      <Text className={cn("text-xs", isDark ? "text-gray-400" : "text-gray-500")}>
+                        {i18n.t("home.expense")}
+                      </Text>
+                      <Text
+                        className={cn("text-lg font-bold", isDark ? "text-white" : "text-[#1E1E2D]")}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                      >
+                        {formatCurrency(totalMonthExpense, baseCurrency, false)}
+                      </Text>
+                    </View>
+                  )}
+                />
+              </View>
+
+              <View className="mt-5 gap-2.5">
+                {pieLegend.map((item) => (
+                  <View key={item.label} className="flex-row items-center justify-between">
+                    <View className="flex-1 flex-row items-center pr-3">
+                      <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: item.color }} />
+                      <Text
+                        className={cn("ml-2 text-sm", isDark ? "text-gray-300" : "text-gray-600")}
+                        numberOfLines={1}
+                      >
+                        {item.label}
+                      </Text>
+                    </View>
+                    <Text className={cn("text-sm font-semibold", isDark ? "text-white" : "text-[#1E1E2D]")}>
+                      {formatCurrency(item.amount, baseCurrency, false)} · {item.pct}%
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Recent Transactions */}
