@@ -10,7 +10,7 @@ Designed to be a complete, Play-Store-ready personal money manager: dark balance
 
 ## Features
 
-- 🔐 Email/password + Google OAuth auth (Appwrite)
+- 🔐 Email/password + Google OAuth auth (Appwrite) [will be added later]
 - 💳 Multiple accounts (cash / bank / card)
 - ➕ Add income, expense, and transfer transactions (with splits, receipts, recurring)
 - 📊 Dashboard with live balance card, weekly summary, and charts (react-native-gifted-charts)
