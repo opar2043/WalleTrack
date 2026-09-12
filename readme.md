@@ -1,4 +1,4 @@
-# WalleTrack 
+# WalleTrack ✅
 
 A cross-platform personal finance app built with **Expo SDK 57** (React Native + TypeScript), styled with **NativeWind** (Tailwind CSS), powered by **Appwrite** as the single backend, and state-managed with **Zustand**.
 
