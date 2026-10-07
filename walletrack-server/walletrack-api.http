@@ -1,0 +1,366 @@
+### Walletrack API — request collection
+### Works with the VS Code REST Client extension or the JetBrains HTTP client.
+### Run `npm start` first, then send the requests top to bottom.
+### @name = Walletrack
+
+@base = http://localhost:4000/api/v1
+@email = tester@example.com
+@password = password123
+@token =
+@accountId =
+@toAccountId =
+@categoryId =
+@budgetId =
+@transactionId =
+@month = 2026-01
+
+### Health (no auth)
+GET {{base}}/health
+Accept: application/json
+
+### ---------------------------------------------------------------- auth
+
+### Register (creates the user, seeds categories + starter accounts)
+# @name register
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Login
+# @name login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Logout (revokes the session that made the request)
+POST {{base}}/auth/logout
+Authorization: Bearer {{token}}
+
+### Logout of every device
+POST {{base}}/auth/logout-all
+Authorization: Bearer {{token}}
+
+### Change password (signs out every device)
+POST {{base}}/auth/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "{{password}}",
+  "newPassword": "newpassword123"
+}
+
+### ---------------------------------------------------------------- users
+
+### Current profile
+GET {{base}}/users/me
+Authorization: Bearer {{token}}
+
+### Update profile
+PATCH {{base}}/users/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Renamed User",
+  "avatarColor": "#4F46E5"
+}
+
+### First-run country + currency step
+POST {{base}}/users/me/onboarding
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "country": "US",
+  "currency": "USD",
+  "locale": "en-US"
+}
+
+### Theme + notification preferences
+PATCH {{base}}/users/me/preferences
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "themePreference": "dark",
+  "notificationsEnabled": false,
+  "hideBalances": true
+}
+
+### Back to light + visible balances
+PATCH {{base}}/users/me/preferences
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "themePreference": "system",
+  "hideBalances": false
+}
+
+### Delete the account and all of its data
+DELETE {{base}}/users/me
+Authorization: Bearer {{token}}
+
+### ------------------------------------------------------------ categories
+
+### List categories (optional ?type=income|expense)
+GET {{base}}/categories
+Authorization: Bearer {{token}}
+
+### Create a custom category
+POST {{base}}/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Coffee",
+  "type": "expense",
+  "icon": "coffee",
+  "color": "#A16207"
+}
+
+### Update a category
+PATCH {{base}}/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Coffee & Tea"
+}
+
+### Delete a custom category (defaults cannot be deleted)
+DELETE {{base}}/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+
+### -------------------------------------------------------------- accounts
+
+### List accounts (?includeArchived=true to include archived)
+GET {{base}}/accounts
+Authorization: Bearer {{token}}
+
+### Create an account
+POST {{base}}/accounts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Savings",
+  "type": "bank",
+  "startingBalance": 250000,
+  "color": "#10B981",
+  "note": "Emergency fund"
+}
+
+### Get one account
+GET {{base}}/accounts/{{accountId}}
+Authorization: Bearer {{token}}
+
+### Update an account (changing startingBalance shifts the balance by the same amount)
+PATCH {{base}}/accounts/{{accountId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Everyday",
+  "color": "#0EA5E9"
+}
+
+### Archive an account (keeps history, hides it from totals)
+POST {{base}}/accounts/{{accountId}}/archive
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isArchived": true
+}
+
+### Delete an account (only when it has no transactions)
+DELETE {{base}}/accounts/{{accountId}}
+Authorization: Bearer {{token}}
+
+### ---------------------------------------------------------- transactions
+
+### List transactions (page, limit, type, accountId, categoryId, from, to, search, minAmount, maxAmount)
+GET {{base}}/transactions?page=1&limit=20&type=expense&from={{month}}-01&to={{month}}-31&search=Lunch
+Authorization: Bearer {{token}}
+
+### Get one transaction
+GET {{base}}/transactions/{{transactionId}}
+Authorization: Bearer {{token}}
+
+### Record an expense (returns budget alerts for an immediate toast)
+POST {{base}}/transactions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "expense",
+  "amount": 1250,
+  "accountId": "{{accountId}}",
+  "categoryId": "{{categoryId}}",
+  "date": "{{month}}-05",
+  "note": "Lunch"
+}
+
+### Record income
+POST {{base}}/transactions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "income",
+  "amount": 320000,
+  "accountId": "{{accountId}}",
+  "categoryId": "{{categoryId}}",
+  "date": "{{month}}-01",
+  "note": "Salary"
+}
+
+### Transfer between two accounts
+POST {{base}}/transactions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "type": "transfer",
+  "amount": 5000,
+  "accountId": "{{accountId}}",
+  "toAccountId": "{{toAccountId}}",
+  "date": "{{month}}-06",
+  "note": "Cash withdrawal"
+}
+
+### Edit a transaction (reverses the old balance effect, applies the new one)
+PATCH {{base}}/transactions/{{transactionId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "amount": 2000,
+  "note": "Dinner"
+}
+
+### Delete a transaction (reverses the balance effect)
+DELETE {{base}}/transactions/{{transactionId}}
+Authorization: Bearer {{token}}
+
+### --------------------------------------------------------------- budgets
+
+### List budgets for a month, with live progress and status
+GET {{base}}/budgets?month={{month}}
+Authorization: Bearer {{token}}
+
+### Create a category budget (omit categoryId for an overall budget)
+POST {{base}}/budgets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "month": "{{month}}",
+  "categoryId": "{{categoryId}}",
+  "limit": 45000,
+  "note": "Keep it under 450"
+}
+
+### Create an overall monthly budget
+POST {{base}}/budgets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "month": "{{month}}",
+  "limit": 400000
+}
+
+### Copy budgets into another month
+POST {{base}}/budgets/copy
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fromMonth": "{{month}}",
+  "toMonth": "2026-02"
+}
+
+### Update a budget
+PATCH {{base}}/budgets/{{budgetId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "limit": 50000
+}
+
+### Delete a budget
+DELETE {{base}}/budgets/{{budgetId}}
+Authorization: Bearer {{token}}
+
+### -------------------------------------------------- dashboard & analytics
+
+### Dashboard (range=7 or 30)
+GET {{base}}/dashboard?range=7
+Authorization: Bearer {{token}}
+
+### Monthly analytics with month-over-month comparison
+GET {{base}}/analytics/monthly?month={{month}}
+Authorization: Bearer {{token}}
+
+### Months that contain data
+GET {{base}}/analytics/months
+Authorization: Bearer {{token}}
+
+### Category detail
+GET {{base}}/analytics/categories/{{categoryId}}?month={{month}}
+Authorization: Bearer {{token}}
+
+### Financial insights
+GET {{base}}/insights?month={{month}}
+Authorization: Bearer {{token}}
+
+### --------------------------------------------------------------- premium
+
+### Plans and benefits (public)
+GET {{base}}/premium/plans
+Accept: application/json
+
+### Current entitlement
+GET {{base}}/premium/status
+Authorization: Bearer {{token}}
+
+### Free tier limits (so the client never hard-codes them)
+GET {{base}}/premium/limits
+Authorization: Bearer {{token}}
+
+### Record a purchase (integration point for Play Billing / RevenueCat)
+POST {{base}}/premium/purchase
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": "premium_yearly",
+  "purchaseToken": "purchase-token-from-the-store"
+}
+
+### Restore a previous purchase
+POST {{base}}/premium/restore
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": "premium_yearly",
+  "purchaseToken": "purchase-token-from-the-store"
+}
+
+### Cancel the local entitlement
+POST {{base}}/premium/cancel
+Authorization: Bearer {{token}}

@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+*.log
+.DS_Store
+coverage/
+dist/
+
+# Local data directory used by MONGODB_URI=memory
+.mongo-data/

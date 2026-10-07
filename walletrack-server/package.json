@@ -1,0 +1,40 @@
+{
+  "name": "walletrack-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Walletrack API — Express + MongoDB (native driver) backend for the Walletrack personal finance app.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node scripts/seed.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
+    "verify": "npm run lint && npm run format:check",
+    "test:api": "node scripts/smokeTest.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "mongodb": "^7.0.0",
+    "morgan": "^1.10.1",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "mongodb-memory-server": "^11.3.0",
+    "prettier": "^3.6.2"
+  }
+}
