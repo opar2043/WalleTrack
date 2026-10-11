@@ -71,7 +71,11 @@ export default function AnalyticsScreen() {
       refreshing={monthly.isRefetching}
       onRefresh={() => void monthly.refetch()}
     >
-      <ScreenHeader title="Insights" subtitle={monthLabel(month)} />
+      <ScreenHeader
+        title="Insights"
+        subtitle={monthLabel(month)}
+        onBack={() => navigation.navigate('Main', { screen: 'Home' })}
+      />
 
       {/* --------------------------------------------------- month selector */}
       <View className="mb-4 flex-row items-center justify-between">

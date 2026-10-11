@@ -25,6 +25,8 @@ export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): voi
 }
 
 function resolveBaseUrl(): string {
+  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, '');
+
   const fromExpo = (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl;
   if (fromExpo) return fromExpo.replace(/\/$/, '');
 

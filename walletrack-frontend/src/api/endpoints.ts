@@ -103,7 +103,9 @@ export const categoriesApi = {
 
 export const accountsApi = {
   list: (includeArchived = false) =>
-    api.get<Account[]>('/accounts', { params: { includeArchived } }),
+    api
+      .get<{ accounts: Account[] }>('/accounts', { params: { includeArchived } })
+      .then((response) => response.accounts),
   create: (input: AccountInput) => api.post<Account>('/accounts', input),
   update: (id: string, input: Partial<AccountInput>) => api.patch<Account>(`/accounts/${id}`, input),
   archive: (id: string, isArchived: boolean) =>

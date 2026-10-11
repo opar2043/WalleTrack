@@ -83,7 +83,7 @@ export default function BudgetsScreen() {
   if (summary.isError) {
     return (
       <Screen edges={{ top: true, bottom: false }} bottomInset={80}>
-        <ScreenHeader title="Budgets" />
+        <ScreenHeader title="Budgets" onBack={() => navigation.navigate('Main', { screen: 'Home' })} />
         <ErrorState message={summary.error.message} onRetry={() => void summary.refetch()} />
       </Screen>
     );
@@ -98,6 +98,7 @@ export default function BudgetsScreen() {
     >
       <ScreenHeader
         title="Budgets"
+        onBack={() => navigation.navigate('Main', { screen: 'Home' })}
         subtitle={monthLabel(month)}
         right={
           <IconButton

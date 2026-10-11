@@ -166,7 +166,10 @@ export default function TransactionsScreen() {
   if (transactions.isError) {
     return (
       <Screen edges={{ top: true, bottom: false }}>
-        <ScreenHeader title="Activity" />
+        <ScreenHeader
+          title="Activity"
+          onBack={() => navigation.navigate('Main', { screen: 'Home' })}
+        />
         <ErrorState message={transactions.error.message} onRetry={() => void transactions.refetch()} />
       </Screen>
     );
@@ -181,6 +184,7 @@ export default function TransactionsScreen() {
     >
       <ScreenHeader
         title="Activity"
+        onBack={() => navigation.navigate('Main', { screen: 'Home' })}
         subtitle={`${all.length} transaction${all.length === 1 ? '' : 's'} this month`}
         right={
           <>

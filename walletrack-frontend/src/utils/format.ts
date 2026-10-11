@@ -25,6 +25,7 @@ const MINOR_UNITS: Record<string, number> = {
   HKD: 2,
   NZD: 2,
   INR: 2,
+  BDT: 2,
   AED: 2,
   ILS: 2,
   JPY: 0,

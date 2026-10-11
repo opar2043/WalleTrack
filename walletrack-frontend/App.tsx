@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider, type QueryClientConfig } from '@tanstack/react-query';
+import ToastManager from 'react-native-toast-alert';
 import { ApiError } from './src/api/client';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { useAuthStore } from './src/store/authStore';
@@ -66,6 +67,7 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
+            <ToastManager />
             <ThemeSync />
             <RootNavigator />
           </ThemeProvider>

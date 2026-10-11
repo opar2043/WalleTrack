@@ -185,8 +185,8 @@ export default function TransactionFormScreen() {
     [amountInput, currency],
   );
 
-  const selectedAccount = accounts.data?.find((account) => account.id === accountId);
-  const selectedCategory = categories.data?.find((category) => category.id === categoryId);
+  const selectedAccount = accounts?.data?.find((account) => account?.id === accountId);
+  const selectedCategory = categories?.data?.find((category) => category?.id === categoryId);
 
   function validate(): boolean {
     const next: Record<string, string> = {};

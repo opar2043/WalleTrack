@@ -21,6 +21,7 @@ const COUNTRIES = [
   { code: 'FR', name: 'France', currency: 'EUR', locale: 'fr-FR', flag: '🇫🇷' },
   { code: 'ES', name: 'Spain', currency: 'EUR', locale: 'es-ES', flag: '🇪🇸' },
   { code: 'IN', name: 'India', currency: 'INR', locale: 'en-IN', flag: '🇮🇳' },
+  { code: 'BD', name: 'Bangladesh', currency: 'BDT', locale: 'bn-BD', flag: '🇧🇩' },
   { code: 'BR', name: 'Brazil', currency: 'BRL', locale: 'pt-BR', flag: '🇧🇷' },
   { code: 'MX', name: 'Mexico', currency: 'MXN', locale: 'es-MX', flag: '🇲🇽' },
   { code: 'JP', name: 'Japan', currency: 'JPY', locale: 'ja-JP', flag: '🇯🇵' },
