@@ -1,6 +1,6 @@
 # Walletrack
 
-Personal finance tracking on your phone: an Express 5 + MongoDB API and a
+Personal finance tracking Mobile App: an Express 5 + MongoDB API and a
 React Native (Expo SDK 57) app for tracking accounts, transactions, budgets,
 analytics and insights — free tier with one optional Premium tier.
 
